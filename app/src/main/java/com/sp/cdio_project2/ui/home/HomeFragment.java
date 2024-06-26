@@ -10,32 +10,27 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+
+import com.sp.cdio_project2.R;
 import com.sp.cdio_project2.databinding.FragmentHomeBinding;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
 
-    private HomeViewModel homeViewModel;
-    private FragmentHomeBinding binding;
-    private RecyclerView recyclerView;
-
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
-        homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
-
-
-
-
-
-
-        return root;
-    }
-
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        // Retrieve data from arguments
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            String title = bundle.getString("title");
+            String description = bundle.getString("description");
+
+            // Now you can use 'title' and 'description' in your fragment as needed
+        }
+
+        return view;
     }
 }

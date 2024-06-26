@@ -21,7 +21,7 @@ import androidx.fragment.app.Fragment;
 import com.sp.cdio_project2.Database.DatabaseHelper;
 import com.sp.cdio_project2.R;
 
-public class form extends Fragment {
+public class form_ extends Fragment {
 
     private EditText titleEditText, descriptionEditText;
     private Button saveButton;
