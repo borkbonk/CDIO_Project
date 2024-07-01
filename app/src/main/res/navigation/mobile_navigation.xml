@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-         android:id="@+id/navigation_dashboard"
-        android:name="com.sp.cdio_project2.form.form_"
+        android:id="@+id/navigation_dashboard"
+        android:name="com.sp.cdio_project2.ui.dashboard.scanqr_"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/layout_qr" />
 
     <fragment
         android:id="@+id/navigation_notifications"

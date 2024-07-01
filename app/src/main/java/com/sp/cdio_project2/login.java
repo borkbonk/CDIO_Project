@@ -26,9 +26,9 @@ public class login extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
-        Objects.requireNonNull(getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        //Objects.requireNonNull(getSupportActionBar()).setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
 
-        View view =getSupportActionBar().getCustomView();
+//        View view =getSupportActionBar().getCustomView();
 
 
         emailEditText = findViewById(R.id.email_edit_text);
