@@ -13,13 +13,13 @@
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="com.sp.cdio_project2.ui.dashboard.Itemlist"
+        android:name="com.sp.cdio_project2.form.Invoiceform"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/layout_qr" />
+        tools:layout="@layout/activity_target" />
 
     <fragment
         android:id="@+id/navigation_notifications"
-        android:name="com.sp.cdio_project2.ui.notifications.NotificationsFragment"
+        android:name="com.sp.cdio_project2.ui.dashboard.Itemlist"
         android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/activity_invoiceform" />
 </navigation>

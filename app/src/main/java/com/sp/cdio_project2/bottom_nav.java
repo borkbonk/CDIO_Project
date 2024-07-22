@@ -1,18 +1,14 @@
 package com.sp.cdio_project2;
 
 import android.os.Bundle;
-
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
-
 import com.sp.cdio_project2.databinding.ActivityBottomNavBinding;
 
-public class    bottom_nav extends AppCompatActivity {
+public class bottom_nav extends AppCompatActivity {
 
     private ActivityBottomNavBinding binding;
 
@@ -23,15 +19,17 @@ public class    bottom_nav extends AppCompatActivity {
         binding = ActivityBottomNavBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        BottomNavigationView navView = findViewById(R.id.mobile_navigation);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
-                .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_bottom_nav);
-        //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        NavigationUI.setupWithNavController(binding.navView, navController);
-    }
+        BottomNavigationView navView = findViewById(R.id.nav_view);
 
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment_activity_bottom_nav);
+
+        if (navHostFragment != null) {
+            NavController navController = navHostFragment.getNavController();
+            NavigationUI.setupWithNavController(navView, navController);
+        } else {
+            // Log an error or throw an exception if the NavHostFragment is not found
+            throw new RuntimeException("NavHostFragment not found");
+        }
+    }
 }

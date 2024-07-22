@@ -1,7 +1,5 @@
 package com.sp.cdio_project2.ui.dashboard;
 
-
-
 public class Item {
     private int id;
     private String title;
@@ -19,12 +17,24 @@ public class Item {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getTitle() {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getQuantity() {
@@ -33,5 +43,10 @@ public class Item {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return title; // Return the title of the item
     }
 }

@@ -45,7 +45,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_TITLE, item.getTitle());
         values.put(COLUMN_DESCRIPTION, item.getDescription());
-        values.put(COLUMN_QUANTITY, 0); // Initialize quantity to 0
+        values.put(COLUMN_QUANTITY, item.getQuantity());
 
         db.insert(TABLE_ITEMS, null, values);
         db.close();
