@@ -78,7 +78,8 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> im
                 } else {
                     String filterPattern = constraint.toString().toLowerCase().trim();
                     for (Item item : itemListFull) {
-                        if (item.getTitle().toLowerCase().contains(filterPattern)) {
+                        if (item.getTitle().toLowerCase().contains(filterPattern) ||
+                                item.getDescription().toLowerCase().contains(filterPattern)) {
                             filteredList.add(item);
                         }
                     }
