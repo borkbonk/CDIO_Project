@@ -1,41 +1,52 @@
 package com.sp.cdio_project2.form;
 
-// InvoiceDisplayActivity.java
-
-
 import android.os.Bundle;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.sp.cdio_project2.R;
+import java.util.ArrayList;
 
 public class InvoiceDisplayActivity extends AppCompatActivity {
 
-    private TextView tvInvoiceDetails;
+    private TextView tvCustomerName;
+    private TextView tvInvoiceDate;
+    private TextView tvInvoiceId;
+    private TextView tvInvoiceName;
+    private LinearLayout itemsContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_invoice_display);
 
-        tvInvoiceDetails = findViewById(R.id.tvInvoiceDetails);
+        tvCustomerName = findViewById(R.id.tvCustomerName);
+        tvInvoiceDate = findViewById(R.id.tvInvoiceDate);
+        tvInvoiceId = findViewById(R.id.tvInvoiceId);
+        tvInvoiceName = findViewById(R.id.tvInvoiceName);
+        itemsContainer = findViewById(R.id.itemsContainer);
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             String customerName = extras.getString("customerName");
             String invoiceDate = extras.getString("invoiceDate");
-            String itemDescription = extras.getString("itemDescription");
-            int itemQuantity = extras.getInt("itemQuantity");
-            double itemPrice = extras.getDouble("itemPrice");
+            String invoiceId = extras.getString("invoiceId");
+            String invoiceName = extras.getString("invoiceName");
+            ArrayList<String> itemDescriptions = extras.getStringArrayList("itemDescriptions");
+            ArrayList<Integer> itemQuantities = extras.getIntegerArrayList("itemQuantities");
 
-            String invoiceDetails = "Customer Name: " + customerName + "\n"
-                    + "Invoice Date: " + invoiceDate + "\n"
-                    + "Item Description: " + itemDescription + "\n"
-                    + "Item Quantity: " + itemQuantity + "\n"
-                    + "Item Price: $" + itemPrice;
+            tvCustomerName.setText(customerName);
+            tvInvoiceDate.setText(invoiceDate);
+            tvInvoiceName.setText(invoiceName);
 
-            tvInvoiceDetails.setText(invoiceDetails);
+            for (int i = 0; i < itemDescriptions.size(); i++) {
+                String itemDescription = itemDescriptions.get(i);
+                int itemQuantity = itemQuantities.get(i);
+
+                TextView itemDetailView = new TextView(this);
+                itemDetailView.setText(itemDescription + " - Quantity: " + itemQuantity);
+                itemsContainer.addView(itemDetailView);
+            }
         }
     }
 }
-
