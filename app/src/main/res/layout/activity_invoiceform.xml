@@ -6,6 +6,18 @@
     android:padding="16dp">
 
     <EditText
+        android:id="@+id/companyNameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Company Name" />
+
+    <EditText
+        android:id="@+id/companyAddressEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Company Address" />
+
+    <EditText
         android:id="@+id/invoiceNameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

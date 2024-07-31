@@ -8,8 +8,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.MutableLiveData;
 
-import com.sp.cdio_project2.Database.DatabaseHelper;
+import com.sp.cdio_project2.Database.FirebaseHelper;
 import com.sp.cdio_project2.R;
 
 public class ItemDetailActivity extends AppCompatActivity {
@@ -21,7 +22,7 @@ public class ItemDetailActivity extends AppCompatActivity {
     private Button increaseButton;
     private Button saveButton;
 
-    private DatabaseHelper db;
+    private FirebaseHelper firebaseHelper;
     private Item currentItem;
 
     @Override
@@ -36,41 +37,45 @@ public class ItemDetailActivity extends AppCompatActivity {
         increaseButton = findViewById(R.id.increaseButton);
         saveButton = findViewById(R.id.saveButton);
 
-        db = new DatabaseHelper(this);
+        firebaseHelper = new FirebaseHelper();
 
         Intent intent = getIntent();
-        int itemId = intent.getIntExtra("ITEM_ID", -1);
-        if (itemId != -1) {
-            currentItem = db.getItem(itemId);
-            updateUI();
+        String itemId = intent.getStringExtra("ITEM_ID");
+        if (itemId != null) {
+            loadItem(itemId);
         }
 
-        decreaseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int currentQuantity = Integer.parseInt(quantityEditText.getText().toString());
-                if (currentQuantity > 0) {
-                    quantityEditText.setText(String.valueOf(currentQuantity - 1));
-                }
+        decreaseButton.setOnClickListener(v -> {
+            int currentQuantity = Integer.parseInt(quantityEditText.getText().toString());
+            if (currentQuantity > 0) {
+                quantityEditText.setText(String.valueOf(currentQuantity - 1));
             }
         });
 
-        increaseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int currentQuantity = Integer.parseInt(quantityEditText.getText().toString());
-                quantityEditText.setText(String.valueOf(currentQuantity + 1));
-            }
+        increaseButton.setOnClickListener(v -> {
+            int currentQuantity = Integer.parseInt(quantityEditText.getText().toString());
+            quantityEditText.setText(String.valueOf(currentQuantity + 1));
         });
 
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                int newQuantity = Integer.parseInt(quantityEditText.getText().toString());
-                currentItem.setQuantity(newQuantity);
-                db.updateItem(currentItem);
-                setResult(RESULT_OK);
-                finish();
+        saveButton.setOnClickListener(v -> {
+            int newQuantity = Integer.parseInt(quantityEditText.getText().toString());
+            currentItem.setQuantity(newQuantity);
+            updateItemInFirebase(currentItem);
+            setResult(RESULT_OK);
+            finish();
+        });
+    }
+
+    private void loadItem(String itemId) {
+        MutableLiveData<Item> itemLiveData = new MutableLiveData<>();
+        firebaseHelper.getItem(itemId, itemLiveData, e -> {
+            // Handle error
+        });
+
+        itemLiveData.observe(this, item -> {
+            if (item != null) {
+                currentItem = item;
+                updateUI();
             }
         });
     }
@@ -79,5 +84,13 @@ public class ItemDetailActivity extends AppCompatActivity {
         titleTextView.setText(currentItem.getTitle());
         descriptionTextView.setText(currentItem.getDescription());
         quantityEditText.setText(String.valueOf(currentItem.getQuantity()));
+    }
+
+    private void updateItemInFirebase(Item item) {
+        firebaseHelper.updateItem(item.getId(), item, unused -> {
+            // Successfully updated item in Firebase
+        }, e -> {
+            // Handle error
+        });
     }
 }

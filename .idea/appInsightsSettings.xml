@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.sp.cdio_project2" />
+                  <option name="mobileSdkAppId" value="1:182603692739:android:3aef25e99d1462b8cfc076" />
+                  <option name="projectId" value="ifsc-inventory" />
+                  <option name="projectNumber" value="182603692739" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

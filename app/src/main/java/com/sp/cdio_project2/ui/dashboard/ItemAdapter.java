@@ -19,14 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> implements Filterable {
-    private static final int EDIT_ITEM_REQUEST = 1;
     private Context context;
     private List<Item> itemList;
     private List<Item> itemListFull;
 
     public ItemAdapter(Context context, List<Item> itemList) {
         this.context = context;
-        this.itemList = itemList;
+        this.itemList = new ArrayList<>(itemList);
         this.itemListFull = new ArrayList<>(itemList);
     }
 
@@ -44,13 +43,10 @@ public class ItemAdapter extends RecyclerView.Adapter<ItemAdapter.ViewHolder> im
         holder.descriptionTextView.setText(item.getDescription());
         holder.quantityTextView.setText(String.valueOf(item.getQuantity()));
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, ItemDetailActivity.class);
-                intent.putExtra("ITEM_ID", item.getId());
-                ((AppCompatActivity) context).startActivityForResult(intent, EDIT_ITEM_REQUEST);
-            }
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, ItemDetailActivity.class);
+            intent.putExtra("ITEM_ID", item.getId());
+            ((AppCompatActivity) context).startActivityForResult(intent, 1);
         });
     }
 
