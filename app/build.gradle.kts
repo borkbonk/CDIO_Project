@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.auth)
+    implementation(libs.swiperefreshlayout)
     testImplementation(libs.junit)
     implementation("com.itextpdf:itext7-core:7.1.15")
     androidTestImplementation(libs.ext.junit)

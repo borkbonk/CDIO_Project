@@ -9,21 +9,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.sp.cdio_project2.R;
 
-import java.io.File;
 import java.util.List;
 
 public class PDFAdapter extends RecyclerView.Adapter<PDFAdapter.PDFViewHolder> {
 
-    private List<File> pdfFiles;
+    private List<PdfMetadata> pdfMetadataList;
     private OnItemClickListener onItemClickListener;
 
     public interface OnItemClickListener {
-        void onItemClick(File file);
-        void onDeleteClick(File file);
+        void onItemClick(PdfMetadata metadata);
+        void onDeleteClick(PdfMetadata metadata);
     }
 
-    public PDFAdapter(List<File> pdfFiles, OnItemClickListener onItemClickListener) {
-        this.pdfFiles = pdfFiles;
+    public PDFAdapter(List<PdfMetadata> pdfMetadataList, OnItemClickListener onItemClickListener) {
+        this.pdfMetadataList = pdfMetadataList;
         this.onItemClickListener = onItemClickListener;
     }
 
@@ -36,13 +35,13 @@ public class PDFAdapter extends RecyclerView.Adapter<PDFAdapter.PDFViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull PDFViewHolder holder, int position) {
-        File pdfFile = pdfFiles.get(position);
-        holder.bind(pdfFile, onItemClickListener);
+        PdfMetadata metadata = pdfMetadataList.get(position);
+        holder.bind(metadata, onItemClickListener);
     }
 
     @Override
     public int getItemCount() {
-        return pdfFiles.size();
+        return pdfMetadataList.size();
     }
 
     static class PDFViewHolder extends RecyclerView.ViewHolder {
@@ -58,21 +57,11 @@ public class PDFAdapter extends RecyclerView.Adapter<PDFAdapter.PDFViewHolder> {
             deleteButton = itemView.findViewById(R.id.deleteButton);
         }
 
-        public void bind(final File pdfFile, final OnItemClickListener listener) {
-            String fileName = pdfFile.getName();
-            String[] parts = fileName.split("_");  // Split by underscore
-            if (parts.length >= 3) {
-                String invoiceName = parts[1].replace("_", " ");  // The name part between the underscores
-                String invoiceDate = parts[2].replace(".pdf", ""); // The date part after the last underscore
-                pdfTitle.setText(invoiceName);
-                invoiceDateLabel.setText(invoiceDate);
-            } else {
-                pdfTitle.setText(fileName);
-                invoiceDateLabel.setText("Unknown Date");
-            }
-
-            itemView.setOnClickListener(v -> listener.onItemClick(pdfFile));
-            deleteButton.setOnClickListener(v -> listener.onDeleteClick(pdfFile));
+        public void bind(final PdfMetadata metadata, final OnItemClickListener listener) {
+            pdfTitle.setText(metadata.getInvoiceName());
+            invoiceDateLabel.setText(metadata.getInvoiceDate());
+            itemView.setOnClickListener(v -> listener.onItemClick(metadata));
+            deleteButton.setOnClickListener(v -> listener.onDeleteClick(metadata));
         }
     }
 }

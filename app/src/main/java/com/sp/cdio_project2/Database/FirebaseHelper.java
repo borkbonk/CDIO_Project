@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -18,7 +19,7 @@ import java.util.List;
 public class FirebaseHelper {
     private static final String TAG = "FirebaseHelper";
     private static final String COLLECTION_ITEMS = "items";
-    private static final String COLLECTION_PDFS = "pdfs";
+    private static final String COLLECTION_PDFS = "pdf_metadata"; // Updated to match collection name in Firestore
     private FirebaseFirestore db;
     private ListenerRegistration listenerRegistration;
 
@@ -70,6 +71,11 @@ public class FirebaseHelper {
                 .addOnSuccessListener(onSuccessListener)
                 .addOnFailureListener(onFailureListener);
     }
+    public void updatePdfMetadataWithId(String documentId, PdfMetadata metadata) {
+        db.collection(COLLECTION_PDFS).document(documentId).set(metadata)
+                .addOnSuccessListener(aVoid -> Log.d(TAG, "PDF metadata updated with document ID: " + documentId))
+                .addOnFailureListener(e -> Log.e(TAG, "Error updating PDF metadata with ID: ", e));
+    }
 
     public void addPdfMetadata(PdfMetadata pdfMetadata, OnSuccessListener<DocumentReference> onSuccessListener, OnFailureListener onFailureListener) {
         db.collection(COLLECTION_PDFS).add(pdfMetadata)
@@ -83,11 +89,38 @@ public class FirebaseHelper {
                 });
     }
 
+    public MutableLiveData<List<PdfMetadata>> getAllPdfs() {
+        MutableLiveData<List<PdfMetadata>> pdfMetadataLiveData = new MutableLiveData<>();
+        db.collection(COLLECTION_PDFS).addSnapshotListener((queryDocumentSnapshots, e) -> {
+            if (e != null) {
+                Log.e(TAG, "Error fetching PDF metadata", e);
+                return;
+            }
+
+            if (queryDocumentSnapshots != null) {
+                List<PdfMetadata> pdfMetadataList = new ArrayList<>();
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    PdfMetadata metadata = doc.toObject(PdfMetadata.class);
+                    pdfMetadataList.add(metadata);
+                }
+                pdfMetadataLiveData.setValue(pdfMetadataList);
+            } else {
+                pdfMetadataLiveData.setValue(new ArrayList<>());
+            }
+        });
+        return pdfMetadataLiveData;
+    }
+
+    public Task<Void> deletePdfMetadata(String documentId) {
+        return db.collection(COLLECTION_PDFS).document(documentId).delete();
+    }
+
     public void removeListener() {
         if (listenerRegistration != null) {
             listenerRegistration.remove();
         }
     }
+
     public String getNewItemId() {
         return db.collection(COLLECTION_ITEMS).document().getId();
     }

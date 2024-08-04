@@ -13,6 +13,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.sp.cdio_project2.Database.FirebaseHelper;
 import com.sp.cdio_project2.R;
 import java.util.List;
@@ -20,23 +22,26 @@ import java.util.List;
 public class Itemlist extends Fragment {
 
     private static final int EDIT_ITEM_REQUEST = 1;
+    private static final int ADD_ITEM_REQUEST = 2; // Add request code for adding item
     private RecyclerView recyclerView;
     private ItemAdapter itemAdapter;
     private FirebaseHelper firebaseHelper;
     private SearchView searchView;
+    private ExtendedFloatingActionButton fabAddItem; // floating action button for adding item
+
+    private FirebaseFirestore db;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_target, container, false);
 
+        db = FirebaseFirestore.getInstance();
+
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         firebaseHelper = new FirebaseHelper();
-
-        // Reinitialize Firestore collection with new items and fetch them
-        reinitializeFirestoreCollection(() -> fetchDataFromFirebase());
 
         searchView = view.findViewById(R.id.searchView);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -54,14 +59,56 @@ public class Itemlist extends Fragment {
             }
         });
 
+        // Initialize FloatingActionButton and set click listener
+        fabAddItem = view.findViewById(R.id.fabAddItem);
+        fabAddItem.setOnClickListener(v -> {
+            // Navigate to AddItemActivity
+            Intent intent = new Intent(getContext(), AddItemActivity.class);
+            startActivityForResult(intent, ADD_ITEM_REQUEST);
+        });
+
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Check if the Firestore collection is empty, if so, initialize it
+        checkAndInitializeFirestoreCollection(() -> fetchDataFromFirebase());
+    }
+
+    private void checkAndInitializeFirestoreCollection(@NonNull Runnable callback) {
+        db.collection("items").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful() && task.getResult() != null) {
+                if (task.getResult().isEmpty()) {
+                    // Collection is empty, add initial items
+                    reinitializeFirestoreCollection(callback);
+                } else {
+                    // Collection is not empty, just fetch data
+                    callback.run();
+                }
+            } else {
+                // Handle error
+                if (task.getException() != null) {
+                    task.getException().printStackTrace();
+                }
+                // Still call the callback to attempt to fetch data
+                callback.run();
+            }
+        });
+    }
+
     private void fetchDataFromFirebase() {
+        if (getView() == null) {
+            return;
+        }
+
         firebaseHelper.getAllItems(new MutableLiveData<>(), e -> {
             // Handle error
+            e.printStackTrace();
         }).observe(getViewLifecycleOwner(), items -> {
-            if (items != null && items.size() > 0) {
+            if (items != null && items.size() > 0 && getView() != null) { // Double-check the view
                 itemAdapter = new ItemAdapter(getContext(), items);
                 recyclerView.setAdapter(itemAdapter);
             }
@@ -74,6 +121,9 @@ public class Itemlist extends Fragment {
         if (requestCode == EDIT_ITEM_REQUEST && resultCode == Activity.RESULT_OK) {
             // Refresh the item list from Firebase
             fetchDataFromFirebase();
+        } else if (requestCode == ADD_ITEM_REQUEST && resultCode == Activity.RESULT_OK) {
+            // Handle the result from AddItemActivity
+            fetchDataFromFirebase(); // Refresh the list to include the new item
         }
     }
 
@@ -96,5 +146,4 @@ public class Itemlist extends Fragment {
         firebaseHelper.addItem(new Item("15", "Phantas Dust Bag", "A0306000031A Description", "A0306000031A", 0), docRef -> callback.run(), e -> callback.run());
         firebaseHelper.addItem(new Item("16", "Scrub 50 Brush", "A0303010557 Description", "A0303010557", 0), docRef -> callback.run(), e -> callback.run());
     }
-
 }

@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -58,11 +59,17 @@ public class ItemDetailActivity extends AppCompatActivity {
         });
 
         saveButton.setOnClickListener(v -> {
-            int newQuantity = Integer.parseInt(quantityEditText.getText().toString());
-            currentItem.setQuantity(newQuantity);
-            updateItemInFirebase(currentItem);
-            setResult(RESULT_OK);
-            finish();
+            if (currentItem != null) {
+                int newQuantity = Integer.parseInt(quantityEditText.getText().toString());
+                currentItem.setQuantity(newQuantity);
+                updateItemInFirebase(currentItem);
+                setResult(RESULT_OK);
+                finish();
+            } else {
+                // Handle the case where currentItem is not yet loaded
+                // Show a toast or keep the button disabled until currentItem is loaded
+                Toast.makeText(ItemDetailActivity.this, "Item not yet loaded. Please wait.", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -70,27 +77,35 @@ public class ItemDetailActivity extends AppCompatActivity {
         MutableLiveData<Item> itemLiveData = new MutableLiveData<>();
         firebaseHelper.getItem(itemId, itemLiveData, e -> {
             // Handle error
+            Toast.makeText(ItemDetailActivity.this, "Error loading item: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
 
         itemLiveData.observe(this, item -> {
             if (item != null) {
                 currentItem = item;
                 updateUI();
+            } else {
+                // Handle the case where the item can't be loaded
+                Toast.makeText(ItemDetailActivity.this, "Item not found", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     private void updateUI() {
-        titleTextView.setText(currentItem.getTitle());
-        descriptionTextView.setText(currentItem.getDescription());
-        quantityEditText.setText(String.valueOf(currentItem.getQuantity()));
+        if (currentItem != null) {
+            titleTextView.setText(currentItem.getTitle());
+            descriptionTextView.setText(currentItem.getDescription());
+            quantityEditText.setText(String.valueOf(currentItem.getQuantity()));
+        }
     }
 
     private void updateItemInFirebase(Item item) {
         firebaseHelper.updateItem(item.getId(), item, unused -> {
             // Successfully updated item in Firebase
+            Toast.makeText(ItemDetailActivity.this, "Item updated successfully", Toast.LENGTH_SHORT).show();
         }, e -> {
             // Handle error
+            Toast.makeText(ItemDetailActivity.this, "Error updating item: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
     }
 }

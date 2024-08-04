@@ -2,7 +2,7 @@ package com.sp.cdio_project2;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Patterns;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,10 +14,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.AuthResult;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    EditText emailEditText, passwordEditText, confirmPasswordEditText;
+    EditText emailEditText, passwordEditText;
     Button registerBtn;
     ProgressBar progressBar;
 
@@ -32,54 +33,49 @@ public class RegisterActivity extends AppCompatActivity {
 
         emailEditText = findViewById(R.id.email_edit_text);
         passwordEditText = findViewById(R.id.password_edit_text);
-        confirmPasswordEditText = findViewById(R.id.confirm_password_edit_text);
         registerBtn = findViewById(R.id.register_btn);
         progressBar = findViewById(R.id.progress_bar);
 
-        registerBtn.setOnClickListener(view -> registerUser());
-    }
+        registerBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String email = emailEditText.getText().toString().trim();
+                String password = passwordEditText.getText().toString().trim();
 
-    private void registerUser() {
-        String email = emailEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
-        String confirmPassword = confirmPasswordEditText.getText().toString().trim();
+                if (TextUtils.isEmpty(email)) {
+                    Toast.makeText(RegisterActivity.this, "Enter email address!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            emailEditText.setError("Valid email is required");
-            emailEditText.requestFocus();
-            return;
-        }
+                if (TextUtils.isEmpty(password)) {
+                    Toast.makeText(RegisterActivity.this, "Enter password!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-        if (password.isEmpty() || password.length() < 6) {
-            passwordEditText.setError("At least 6 characters password required");
-            passwordEditText.requestFocus();
-            return;
-        }
+                if (password.length() < 6) {
+                    Toast.makeText(RegisterActivity.this, "Password too short, enter minimum 6 characters!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-        if (!password.equals(confirmPassword)) {
-            confirmPasswordEditText.setError("Passwords do not match");
-            confirmPasswordEditText.requestFocus();
-            return;
-        }
+                progressBar.setVisibility(View.VISIBLE);
 
-        progressBar.setVisibility(View.VISIBLE);
-
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    progressBar.setVisibility(View.GONE);
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = mAuth.getCurrentUser();
-                        if (user != null) {
-                            Toast.makeText(RegisterActivity.this, "Registration successful! Please check your email for verification.", Toast.LENGTH_SHORT).show();
-                            user.sendEmailVerification();
-
-                            Intent intent = new Intent(RegisterActivity.this, login.class);
-                            startActivity(intent);
-                            finish();
-                        }
-                    } else {
-                        Toast.makeText(RegisterActivity.this, "Registration failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                // Create user
+                mAuth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(RegisterActivity.this, task -> {
+                            progressBar.setVisibility(View.GONE);
+                            if (task.isSuccessful()) {
+                                // Registration success
+                                FirebaseUser user = mAuth.getCurrentUser();
+                                Toast.makeText(RegisterActivity.this, "Registration successful.", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(RegisterActivity.this, login.class));
+                                finish();
+                            } else {
+                                // Registration fails
+                                Toast.makeText(RegisterActivity.this, "Authentication failed." + task.getException(),
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+        });
     }
 }

@@ -1,6 +1,7 @@
 package com.sp.cdio_project2.form;
 
-import android.content.Intent;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,12 +20,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.sp.cdio_project2.Database.FirebaseHelper;
 import com.sp.cdio_project2.R;
 import com.sp.cdio_project2.ui.dashboard.Item;
@@ -39,12 +41,14 @@ import com.itextpdf.layout.property.UnitValue;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Locale;
 
 public class Invoiceform extends Fragment {
+    private static final int STORAGE_PERMISSION_CODE = 1;
+
     private FirebaseHelper firebaseHelper;
     private LinearLayout itemsContainer;
     private Button addItemButton;
@@ -54,10 +58,7 @@ public class Invoiceform extends Fragment {
     private EditText companyNameEditText;
     private EditText companyAddressEditText;
     private EditText customerNameEditText;
-    private EditText invoiceDateEditText;
     private EditText invoiceNameEditText;
-
-    private static final String TAG = "Invoiceform";
 
     @Nullable
     @Override
@@ -73,11 +74,10 @@ public class Invoiceform extends Fragment {
         companyNameEditText = view.findViewById(R.id.companyNameEditText);
         companyAddressEditText = view.findViewById(R.id.companyAddressEditText);
         customerNameEditText = view.findViewById(R.id.customerNameEditText);
-        invoiceDateEditText = view.findViewById(R.id.invoiceDateEditText);
         invoiceNameEditText = view.findViewById(R.id.invoiceNameEditText);
 
         addItemButton.setOnClickListener(v -> addItemView());
-        generateOrderButton.setOnClickListener(v -> generateOrder());
+        generateOrderButton.setOnClickListener(v -> checkStoragePermissions());
 
         addItemView(); // Add the first item view by default
         return view;
@@ -100,14 +100,41 @@ public class Invoiceform extends Fragment {
 
     private void loadItems(Spinner spinner) {
         MutableLiveData<List<Item>> itemsLiveData = new MutableLiveData<>();
-        firebaseHelper.getAllItems(itemsLiveData, e -> Log.e(TAG, "Error getting items", e));
+        firebaseHelper.getAllItems(itemsLiveData, e -> Log.e("Invoiceform", "Error getting items", e));
 
         itemsLiveData.observe(getViewLifecycleOwner(), items -> {
             ArrayAdapter<Item> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, items);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(adapter);
-            Log.d(TAG, "Spinner loaded with items");
         });
+    }
+
+    private void checkStoragePermissions() {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+            // Request the permissions.
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                    STORAGE_PERMISSION_CODE);
+        } else {
+            // Permissions are already granted, proceed with normal flow.
+            generateOrder();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == STORAGE_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                generateOrder();
+            } else {
+                Toast.makeText(getContext(), "Permissions Denied", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     private void generateOrder() {
@@ -183,27 +210,25 @@ public class Invoiceform extends Fragment {
 
             try {
                 String pdfPath = generatePdf(companyName, companyAddress, invoiceName, customerName, invoiceDate, orderItems, quantities);
-                Log.d(TAG, "Generated PDF Path: " + pdfPath);
+                Log.d("Invoiceform", "Generated PDF Path: " + pdfPath);
                 uploadPdfToStorage(pdfPath, companyName, companyAddress, invoiceName, invoiceDate);
                 Toast.makeText(getContext(), "Order generated successfully", Toast.LENGTH_SHORT).show();
             } catch (FileNotFoundException e) {
                 Toast.makeText(getContext(), "Error generating PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "Failed to generate PDF", e);
             }
         }
     }
 
     private void updateItemInFirebase(Item item) {
         firebaseHelper.updateItem(item.getId(), item, unused -> {
-            Log.d(TAG, "Item updated in Firebase: " + item.getTitle());
-        }, e -> Log.e(TAG, "Error updating item", e));
+            // Successfully updated item in Firebase
+        }, e -> Log.e("Invoiceform", "Error updating item", e));
     }
 
     private String generatePdf(String companyName, String companyAddress, String invoiceName, String customerName, String invoiceDate, List<Item> items, List<Integer> quantities) throws FileNotFoundException {
-        File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        File directory = getContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         if (!directory.exists()) {
             directory.mkdirs(); // Create the directory if it doesn't exist
-            Log.d(TAG, "Directory created: " + directory.getPath());
         }
 
         String cleanInvoiceName = invoiceName.replace(" ", "_");
@@ -217,7 +242,6 @@ public class Invoiceform extends Fragment {
         document.add(new Paragraph("Company Address: " + companyAddress));
         document.add(new Paragraph("Invoice Name: " + invoiceName));
         document.add(new Paragraph("Customer Name: " + customerName));
-        document.add(new Paragraph("Invoice Date: " + invoiceDate));
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{4, 4}));
         table.addHeaderCell("Item");
@@ -233,7 +257,6 @@ public class Invoiceform extends Fragment {
 
         document.add(table);
         document.close();
-        Log.d(TAG, "PDF generated: " + path);
 
         return path;
     }
@@ -241,12 +264,12 @@ public class Invoiceform extends Fragment {
     private void uploadPdfToStorage(String pdfPath, String companyName, String companyAddress, String invoiceName, String invoiceDate) {
         File pdfFile = new File(pdfPath);
         if (!pdfFile.exists()) {
-            Log.e(TAG, "PDF file does not exist at path: " + pdfPath);
+            Log.e("Invoiceform", "PDF file does not exist at path: " + pdfPath);
             return;
         }
 
         Uri fileUri = Uri.fromFile(pdfFile);
-        Log.d(TAG, "File URI: " + fileUri.toString());
+        Log.d("Invoiceform", "File URI: " + fileUri.toString());
 
         StorageReference storageRef = FirebaseStorage.getInstance().getReference();
         StorageReference pdfRef = storageRef.child("invoices/" + fileUri.getLastPathSegment());
@@ -254,26 +277,33 @@ public class Invoiceform extends Fragment {
         pdfRef.putFile(fileUri)
                 .addOnSuccessListener(taskSnapshot -> {
                     pdfRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                        Log.d(TAG, "PDF uploaded. Download URL: " + uri.toString());
+                        Log.d("Invoiceform", "PDF uploaded. Download URL: " + uri.toString());
+                        // Save PDF metadata to Firestore
                         savePdfMetadataToFirestore(uri.toString(), companyName, companyAddress, invoiceName, invoiceDate);
                     });
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error uploading PDF: ", e);
+                    Log.e("Invoiceform", "Error uploading PDF: ", e);
                     Toast.makeText(getContext(), "Failed to upload PDF", Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void savePdfMetadataToFirestore(String downloadUrl, String companyName, String companyAddress, String invoiceName, String invoiceDate) {
-        String pdfFileName = "invoice_" + invoiceName.replace(" ", "<em>") + "</em>" + invoiceDate + ".pdf";
+        String pdfFileName = sanitizeFileName("invoice_" + invoiceName + "_" + invoiceDate + ".pdf");
         PdfMetadata metadata = new PdfMetadata(pdfFileName, downloadUrl, companyName, companyAddress, invoiceName, invoiceDate);
 
         firebaseHelper.addPdfMetadata(metadata, documentReference -> {
-            Log.d(TAG, "PDF metadata added with ID: " + documentReference.getId());
-            Toast.makeText(getContext(), "PDF metadata added successfully", Toast.LENGTH_SHORT).show();
+            // Save document ID in metadata for deletion
+            metadata.setDocumentId(documentReference.getId());
+            Log.d("Invoiceform", "PDF metadata added with ID: " + documentReference.getId());
         }, e -> {
-            Log.e(TAG, "Error adding PDF metadata: ", e);
+            Log.e("Invoiceform", "Error adding PDF metadata: ", e);
             Toast.makeText(getContext(), "Failed to add PDF metadata", Toast.LENGTH_SHORT).show();
         });
+    }
+
+    // Function to sanitize the file name to be a valid Firestore document ID
+    private String sanitizeFileName(String fileName) {
+        return fileName.replaceAll("[^a-zA-Z0-9.<em>-]", "</em>");
     }
 }

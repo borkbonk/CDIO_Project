@@ -1,19 +1,16 @@
 package com.sp.cdio_project2.ui.dashboard;
 
-// Add necessary imports here if needed
-
 public class Item {
     private String id;
     private String title;
     private String description;
-    private String code; // Ensuring this field exists
+    private String code;
     private int quantity;
 
     public Item() {
         // Default constructor required for calls to DataSnapshot.getValue(Item.class)
     }
 
-    // Ensure this constructor matches the parameters you intend to use
     public Item(String id, String title, String description, String code, int quantity) {
         this.id = id;
         this.title = title;
@@ -22,7 +19,6 @@ public class Item {
         this.quantity = quantity;
     }
 
-    // Getter and Setter methods for all fields
     public String getId() {
         return id;
     }
@@ -61,5 +57,10 @@ public class Item {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return title;
     }
 }

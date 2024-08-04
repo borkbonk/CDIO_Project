@@ -29,11 +29,7 @@
         android:layout_height="wrap_content"
         android:hint="Customer Name" />
 
-    <EditText
-        android:id="@+id/invoiceDateEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Invoice Date" />
+
 
     <LinearLayout
         android:id="@+id/itemsContainer"
