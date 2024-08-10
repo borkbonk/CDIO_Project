@@ -147,6 +147,7 @@ public class Invoiceform extends Fragment {
         String customerName = customerNameEditText.getText().toString().trim();
         String invoiceName = invoiceNameEditText.getText().toString().trim();
         String invoiceDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+        String dateGenerated = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date()); // Date of generation
 
         if (TextUtils.isEmpty(companyName)) {
             isValid = false;
@@ -209,9 +210,9 @@ public class Invoiceform extends Fragment {
             }
 
             try {
-                String pdfPath = generatePdf(companyName, companyAddress, invoiceName, customerName, invoiceDate, orderItems, quantities);
+                String pdfPath = generatePdf(companyName, companyAddress, invoiceName, customerName, invoiceDate, dateGenerated, orderItems, quantities);
                 Log.d("Invoiceform", "Generated PDF Path: " + pdfPath);
-                uploadPdfToStorage(pdfPath, companyName, companyAddress, invoiceName, invoiceDate);
+                uploadPdfToStorage(pdfPath, companyName, companyAddress, invoiceName, invoiceDate, dateGenerated);
                 Toast.makeText(getContext(), "Order generated successfully", Toast.LENGTH_SHORT).show();
             } catch (FileNotFoundException e) {
                 Toast.makeText(getContext(), "Error generating PDF: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -225,7 +226,7 @@ public class Invoiceform extends Fragment {
         }, e -> Log.e("Invoiceform", "Error updating item", e));
     }
 
-    private String generatePdf(String companyName, String companyAddress, String invoiceName, String customerName, String invoiceDate, List<Item> items, List<Integer> quantities) throws FileNotFoundException {
+    private String generatePdf(String companyName, String companyAddress, String invoiceName, String customerName, String invoiceDate, String dateGenerated, List<Item> items, List<Integer> quantities) throws FileNotFoundException {
         File directory = getContext().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
         if (!directory.exists()) {
             directory.mkdirs(); // Create the directory if it doesn't exist
@@ -242,6 +243,7 @@ public class Invoiceform extends Fragment {
         document.add(new Paragraph("Company Address: " + companyAddress));
         document.add(new Paragraph("Invoice Name: " + invoiceName));
         document.add(new Paragraph("Customer Name: " + customerName));
+        document.add(new Paragraph("Date Generated: " + dateGenerated)); // Add date of generation
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{4, 4}));
         table.addHeaderCell("Item");
@@ -261,7 +263,7 @@ public class Invoiceform extends Fragment {
         return path;
     }
 
-    private void uploadPdfToStorage(String pdfPath, String companyName, String companyAddress, String invoiceName, String invoiceDate) {
+    private void uploadPdfToStorage(String pdfPath, String companyName, String companyAddress, String invoiceName, String invoiceDate, String dateGenerated) {
         File pdfFile = new File(pdfPath);
         if (!pdfFile.exists()) {
             Log.e("Invoiceform", "PDF file does not exist at path: " + pdfPath);
@@ -279,7 +281,10 @@ public class Invoiceform extends Fragment {
                     pdfRef.getDownloadUrl().addOnSuccessListener(uri -> {
                         Log.d("Invoiceform", "PDF uploaded. Download URL: " + uri.toString());
                         // Save PDF metadata to Firestore
-                        savePdfMetadataToFirestore(uri.toString(), companyName, companyAddress, invoiceName, invoiceDate);
+                        savePdfMetadataToFirestore(uri.toString(), companyName, companyAddress, invoiceName, invoiceDate, dateGenerated);
+                    }).addOnFailureListener(e -> {
+                        Log.e("Invoiceform", "Error getting download URL", e);
+                        Toast.makeText(getContext(), "Failed to get PDF download URL", Toast.LENGTH_SHORT).show();
                     });
                 })
                 .addOnFailureListener(e -> {
@@ -288,9 +293,9 @@ public class Invoiceform extends Fragment {
                 });
     }
 
-    private void savePdfMetadataToFirestore(String downloadUrl, String companyName, String companyAddress, String invoiceName, String invoiceDate) {
+    private void savePdfMetadataToFirestore(String downloadUrl, String companyName, String companyAddress, String invoiceName, String invoiceDate, String dateGenerated) {
         String pdfFileName = sanitizeFileName("invoice_" + invoiceName + "_" + invoiceDate + ".pdf");
-        PdfMetadata metadata = new PdfMetadata(pdfFileName, downloadUrl, companyName, companyAddress, invoiceName, invoiceDate);
+        PdfMetadata metadata = new PdfMetadata(pdfFileName, downloadUrl, companyName, companyAddress, invoiceName, invoiceDate, dateGenerated);
 
         firebaseHelper.addPdfMetadata(metadata, documentReference -> {
             // Save document ID in metadata for deletion

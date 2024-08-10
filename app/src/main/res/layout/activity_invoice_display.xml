@@ -10,7 +10,7 @@
         android:id="@+id/tvInvoiceDetails"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Invoice Details"
+        android:text="Delivery Order"
         android:textSize="20sp"
         android:textStyle="bold"
         android:paddingBottom="16dp" />
@@ -19,7 +19,7 @@
         android:id="@+id/tvInvoiceNameLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Invoice Name:"
+        android:text="Delivery Order Name:"
         android:textStyle="bold"
         android:paddingBottom="4dp" />
 
@@ -47,7 +47,7 @@
         android:id="@+id/tvInvoiceDateLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Invoice Date:"
+        android:text="Date:"
         android:textStyle="bold"
         android:paddingBottom="4dp" />
 
@@ -57,6 +57,19 @@
         android:layout_height="wrap_content"
         android:paddingBottom="16dp" />
 
+    <TextView
+        android:id="@+id/tvDateGeneratedLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Date of Generation:"
+        android:textStyle="bold"
+        android:paddingBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tvDateGenerated"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="16dp" />
 
     <TextView
         android:id="@+id/tvInvoiceId"

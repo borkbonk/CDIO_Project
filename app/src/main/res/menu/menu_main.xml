@@ -5,7 +5,7 @@
     tools:ignore="ExtraText">
     <item
         android:id="@+id/action_logout"
-        android:icon="@drawable/gradient"
+        android:icon="@drawable/baseline_logout_24"
         android:title="Logout"
         app:showAsAction="ifRoom" />
 </menu>

@@ -7,6 +7,7 @@ public class PdfMetadata {
     private String companyAddress;
     private String invoiceName;
     private String invoiceDate;
+    private String dateGenerated; // New field for the date the PDF was generated
     private String documentId; // Ensuring this field exists
 
     // Constructor
@@ -14,13 +15,14 @@ public class PdfMetadata {
         // Default constructor required for calls to DataSnapshot.getValue(PdfMetadata.class)
     }
 
-    public PdfMetadata(String fileName, String url, String companyName, String companyAddress, String invoiceName, String invoiceDate) {
+    public PdfMetadata(String fileName, String url, String companyName, String companyAddress, String invoiceName, String invoiceDate, String dateGenerated) {
         this.fileName = fileName;
         this.url = url;
         this.companyName = companyName;
         this.companyAddress = companyAddress;
         this.invoiceName = invoiceName;
         this.invoiceDate = invoiceDate;
+        this.dateGenerated = dateGenerated; // Set the new field
     }
 
     // Getters and setters
@@ -41,6 +43,9 @@ public class PdfMetadata {
 
     public String getInvoiceDate() { return invoiceDate; }
     public void setInvoiceDate(String invoiceDate) { this.invoiceDate = invoiceDate; }
+
+    public String getDateGenerated() { return dateGenerated; }
+    public void setDateGenerated(String dateGenerated) { this.dateGenerated = dateGenerated; }
 
     public String getDocumentId() { return documentId; }
     public void setDocumentId(String documentId) { this.documentId = documentId; }

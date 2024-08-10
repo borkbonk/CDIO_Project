@@ -13,6 +13,7 @@ public class InvoiceDisplayActivity extends AppCompatActivity {
     private TextView tvInvoiceDate;
     private TextView tvInvoiceId;
     private TextView tvInvoiceName;
+    private TextView tvDateGenerated; // New TextView for Date of Generation
     private LinearLayout itemsContainer;
 
     @Override
@@ -24,6 +25,7 @@ public class InvoiceDisplayActivity extends AppCompatActivity {
         tvInvoiceDate = findViewById(R.id.tvInvoiceDate);
         tvInvoiceId = findViewById(R.id.tvInvoiceId);
         tvInvoiceName = findViewById(R.id.tvInvoiceName);
+        tvDateGenerated = findViewById(R.id.tvDateGenerated); // Initialize the new TextView
         itemsContainer = findViewById(R.id.itemsContainer);
 
         Bundle extras = getIntent().getExtras();
@@ -32,12 +34,14 @@ public class InvoiceDisplayActivity extends AppCompatActivity {
             String invoiceDate = extras.getString("invoiceDate");
             String invoiceId = extras.getString("invoiceId");
             String invoiceName = extras.getString("invoiceName");
+            String dateGenerated = extras.getString("dateGenerated"); // Retrieve the date of generation
             ArrayList<String> itemDescriptions = extras.getStringArrayList("itemDescriptions");
             ArrayList<Integer> itemQuantities = extras.getIntegerArrayList("itemQuantities");
 
             tvCustomerName.setText(customerName);
             tvInvoiceDate.setText(invoiceDate);
             tvInvoiceName.setText(invoiceName);
+            tvDateGenerated.setText(dateGenerated); // Set the date of generation
 
             for (int i = 0; i < itemDescriptions.size(); i++) {
                 String itemDescription = itemDescriptions.get(i);
